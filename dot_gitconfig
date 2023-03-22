@@ -1,0 +1,5 @@
+[user]
+	name = Jean de Kernier
+	email = jean@kernier.dev
+[core]
+	editor = vim
