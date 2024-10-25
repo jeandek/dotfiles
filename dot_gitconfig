@@ -1,5 +1,25 @@
 [user]
 	name = Jean de Kernier
 	email = jean@kernier.dev
+	signingkey = B813782A74BB6703
 [core]
 	editor = vim
+
+[alias]
+	a = add
+	b = branch
+	c = commit
+	cl = clone
+	co = checkout
+	cp = cherry-pick
+	fp = "push --force-with-lease"
+	m = merge
+	p = push --follow-tags
+	pu = pull
+	r = reset
+	s = status
+	move-branch = "!f() { \
+    		: git checkout \
+    		git rebase --onto $2 $(git merge-base $1 @) \
+		}; f"
+	stash-staged = "!$HOME/.config/bin/git/stash-staged"
