@@ -14,9 +14,6 @@
   navigate = true    # use n and N to move between diff sections
 	side-by-side = true
 
-[commit]
-  gpgSign = true
-
 [fetch]
   prune = true
 
