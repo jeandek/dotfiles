@@ -2,17 +2,36 @@
 	name = Jean de Kernier
 	email = jean@kernier.dev
 	signingkey = B813782A74BB6703
+
 [core]
 	editor = vim
+	pager = delta
+
+[interactive]
+  diffFilter = delta --color-only
+
+[delta]
+  navigate = true    # use n and N to move between diff sections
+	side-by-side = true
+
+[commit]
+  gpgSign = true
+
+[fetch]
+  prune = true
+
+[merge]
+  conflictstyle = diff3
 
 [alias]
 	a = add
 	b = branch
-	c = commit
+	c = commit -m
 	cl = clone
 	co = checkout
 	cp = cherry-pick
 	fp = "push --force-with-lease"
+	last = log -1 HEAD
 	m = merge
 	p = push --follow-tags
 	pu = pull

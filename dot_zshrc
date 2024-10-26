@@ -13,42 +13,38 @@ HIST_STAMPS="yyyy-mm-dd"
 
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
-plugins=(aws colored-man-pages zsh-syntax-highlighting)
+plugins=(aliases aws colored-man-pages zsh-syntax-highlighting)
 
 source $ZSH/oh-my-zsh.sh
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 # User configuration
-
 export EDITOR='vim'
 
 # Tools
+export PATH="~/.local/bin:$PATH"
 
-# pipx
-export PATH="/home/jean/.local/bin:$PATH"
-export PIPX_DEFAULT_PYTHON="$HOME/.pyenv/versions/3.11.3/bin/python"
-# pyenv
-export PYENV_ROOT="$HOME/.pyenv"
-command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
-eval "$(pyenv init -)"
-
-# add ASDF to $PATH and set up completions
-. "$HOME/.asdf/asdf.sh"
-fpath=(${ASDF_DIR}/completions $fpath)
-
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-
-eval "$(jump shell)"
-
-autoload -Uz compinit && compinit
-source "${XDG_CONFIG_HOME:-$HOME/.config}/asdf-direnv/zshrc"
+eval "$(~/.local/bin/mise activate zsh)"
+eval "$(direnv hook zsh)"
+source ~/.local/bin/z.sh
+if [[ "$OS" == "Linux" ]]; then
+  source  /usr/share/doc/fzf/examples/completion.zsh
+  source  /usr/share/doc/fzf/examples/key-bindings.zsh
+elif [[ "$OS" == "macOS" ]]; then
+  source <(fzf --zsh)
+fi
 
 # Aliases
+if [[ "$OS" == "Linux" ]]; then
+  alias cat="batcat"
+elif [[ "$OS" == "macOS" ]]; then
+  alias cat="bat"
+fi
 
 alias doco="docker compose"
 alias findempty= "find . -type d --empty"
-alias ls="exa"
-alias ll="exa -lh"
-alias lsa="exa -lah"
-alias lsg="exa -lh --git"
-
+alias ls="eza"
+alias ll="eza -lh"
+alias lsa="eza -lah"
+alias lsg="eza -lh --git"
+alias nnn="nnn -e"
