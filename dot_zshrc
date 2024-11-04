@@ -25,7 +25,6 @@ export EDITOR='vim'
 export PATH="$HOME/.local/bin:$PATH"
 
 eval "$($HOME/.local/bin/mise activate zsh)"
-eval "$(direnv hook zsh)"
 source $HOME/.local/bin/z.sh
 if [[ "$OS" == "Linux" ]]; then
   source  /usr/share/doc/fzf/examples/completion.zsh
