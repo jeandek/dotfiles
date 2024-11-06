@@ -26,19 +26,24 @@ export PATH="$HOME/.local/bin:$PATH"
 
 eval "$($HOME/.local/bin/mise activate zsh)"
 source $HOME/.local/bin/z.sh
-if [[ "$OS" == "Linux" ]]; then
-  source  /usr/share/doc/fzf/examples/completion.zsh
-  source  /usr/share/doc/fzf/examples/key-bindings.zsh
-elif [[ "$OS" == "macOS" ]]; then
-  source <(fzf --zsh)
-fi
+{{ if eq .chezmoi.os "darwin" -}}
+source <(fzf --zsh)
+{{ else if eq .chezmoi.os "linux" -}}
+source  /usr/share/doc/fzf/examples/completion.zsh
+source  /usr/share/doc/fzf/examples/key-bindings.zsh
+{{ end -}}
+
+# Work-specific configuration
+{{- if eq .chezmoi.username "jkernier" }}
+source $HOME/.zshaws
+{{- end }}
 
 # Aliases
-if [[ "$OS" == "Linux" ]]; then
-  alias cat="batcat"
-elif [[ "$OS" == "macOS" ]]; then
-  alias cat="bat"
-fi
+{{ if eq .chezmoi.os "darwin" -}}
+alias cat="bat"
+{{ else if eq .chezmoi.os "linux" -}}
+alias cat="batcat"
+{{ end -}}
 
 alias doco="docker compose"
 alias findempty= "find . -type d --empty"
