@@ -13,7 +13,14 @@ HIST_STAMPS="yyyy-mm-dd"
 
 # Standard plugins can be found in $ZSH/plugins/
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
-plugins=(aliases aws colored-man-pages zsh-syntax-highlighting)
+plugins=(
+  aliases
+  aws
+  colored-man-pages
+  z
+  zsh-autosuggestions
+  zsh-syntax-highlighting
+)
 
 source $ZSH/oh-my-zsh.sh
 [[ ! -f $HOME/.p10k.zsh ]] || source $HOME/.p10k.zsh
@@ -25,7 +32,6 @@ export EDITOR='vim'
 export PATH="$HOME/.local/bin:$PATH"
 
 eval "$($HOME/.local/bin/mise activate zsh)"
-source $HOME/.local/bin/z.sh
 {{ if eq .chezmoi.os "darwin" -}}
 source <(fzf --zsh)
 {{ else if eq .chezmoi.os "linux" -}}
@@ -33,10 +39,8 @@ source  /usr/share/doc/fzf/examples/completion.zsh
 source  /usr/share/doc/fzf/examples/key-bindings.zsh
 {{ end -}}
 
-# Work-specific configuration
-{{- if eq .chezmoi.username "jkernier" }}
-source $HOME/.zshaws
-{{- end }}
+# Machine-specific configuration
+source $HOME/.zshlocal
 
 # Aliases
 {{ if eq .chezmoi.os "darwin" -}}
@@ -45,6 +49,9 @@ alias cat="bat"
 alias cat="batcat"
 {{ end -}}
 
+alias cma="chezmoi add"
+alias cmcd="chezmoi cd"
+alias cme="chezmoi edit --apply"
 alias doco="docker compose"
 alias findempty= "find . -type d --empty"
 alias ls="eza"
