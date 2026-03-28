@@ -25,22 +25,36 @@ plugins=(
 source $ZSH/oh-my-zsh.sh
 [[ ! -f $HOME/.p10k.zsh ]] || source $HOME/.p10k.zsh
 
+# Safely prepend a directory to $PATH if it exists and isn't already in $PATH
+path_prepend() {
+  if [ -d "$1" ]; then
+    case ":$PATH:" in
+      *":$1:"*) ;;
+      *) export PATH="$1:$PATH" ;;
+    esac
+  fi
+}
+
 # User configuration
 export EDITOR='vim'
 
 # Tools
-export PATH="$HOME/.local/bin:$PATH"
+path_prepend "$HOME/.local/bin"
+path_prepend "$HOME/.antigravity/antigravity/bin"
 
 eval "$($HOME/.local/bin/mise activate zsh)"
-{{ if eq .chezmoi.os "darwin" -}}
 source <(fzf --zsh)
+
+{{ if eq .chezmoi.os "darwin" -}}
+export PNPM_HOME="/Users/$USER/Library/pnpm"
 {{ else if eq .chezmoi.os "linux" -}}
-source  /usr/share/doc/fzf/examples/completion.zsh
-source  /usr/share/doc/fzf/examples/key-bindings.zsh
+export PNPM_HOME="/home/$USER/.local/share/pnpm"
 {{ end -}}
+path_prepend "$PNPM_HOME"
 
 # Machine-specific configuration
-source $HOME/.zshlocal
+[[ -f "$HOME/.zshlocal" ]] && source "$HOME/.zshlocal"
+
 
 # Aliases
 {{ if eq .chezmoi.os "darwin" -}}
