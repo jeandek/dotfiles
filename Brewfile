@@ -1,4 +1,5 @@
 # Terminal tools
+brew "starship"
 brew "bat"
 brew "eza"
 brew "fzf"

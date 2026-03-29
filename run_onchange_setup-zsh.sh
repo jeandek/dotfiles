@@ -8,11 +8,6 @@ fi
 
 ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
 
-# Install Powerlevel10k theme
-if [ ! -d "$ZSH_CUSTOM/themes/powerlevel10k" ]; then
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$ZSH_CUSTOM/themes/powerlevel10k"
-fi
-
 # Install zsh plugins
 if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
     git clone https://github.com/zsh-users/zsh-autosuggestions "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
