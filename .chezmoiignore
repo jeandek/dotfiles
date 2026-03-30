@@ -2,3 +2,5 @@ Brewfile
 pkglist.txt
 bootstrap.sh
 README.md
+
+.oh-my-zsh/cache/**
