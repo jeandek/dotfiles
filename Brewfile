@@ -20,3 +20,6 @@ cask "font-meslo-for-powerlevel10k"
 brew "awscli"
 brew "gnupg" if OS.mac?
 brew "anomalyco/tap/opencode"
+
+cask "claude-code"
+
