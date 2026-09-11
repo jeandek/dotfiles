@@ -1,6 +1,9 @@
 {{- $email := promptStringOnce . "email" "Email address" -}}
 {{- $kiro_cli := promptBoolOnce . "kiro_cli" "Enable Kiro CLI shell integration" -}}
 
+[diff]
+    exclude = ["externals"]
+
 [data]
     email = {{ $email | quote }}
     kiro_cli = {{ $kiro_cli }}
