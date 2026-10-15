@@ -10,6 +10,7 @@ brew "less"
 brew "nnn"
 brew "ripgrep"
 brew "shellcheck"
+brew "zoxide"
 
 # Editor font
 cask "font-fira-code"

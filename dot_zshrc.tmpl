@@ -15,7 +15,6 @@ plugins=(
   aliases
   aws
   colored-man-pages
-  z
   zsh-autosuggestions
   zsh-syntax-highlighting
 )
@@ -42,6 +41,7 @@ path_prepend "$HOME/.antigravity/antigravity/bin"
 
 eval "$($HOME/.local/bin/mise activate zsh)"
 source <(fzf --zsh)
+eval "$(zoxide init zsh)"
 
 {{ if eq .chezmoi.os "darwin" -}}
 export PNPM_HOME="/Users/$USER/Library/pnpm"
