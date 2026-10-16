@@ -75,6 +75,61 @@ elif [[ "$OS" == "macOS" ]]; then
     fi
 fi
 
+# GitHub credentials for mise, which resolves most tools from GitHub releases.
+#
+# Unauthenticated GitHub API requests are capped at 60/hour per source IP. A
+# host behind a shared NAT gateway shares that budget with everyone else on th
+# gateway and is effectively always exhausted, so # mise cannot resolve tool
+# versions at all. Authenticated requests get 5000/hour.
+#
+# This has to happen before chezmoi init, because that applies the dotfiles and
+# triggers the run_onchange script that calls mise install. gh deliberately
+# comes from the system package manager rather than mise, which would need the
+# very API access it is here to provide.
+if ! command -v gh &> /dev/null; then
+    echo "Installing the GitHub CLI..."
+    # gh is not in the Debian or Fedora/Amazon Linux default repositories, so
+    # GitHub's own package repository has to be added first. Procedures from
+    # https://github.com/cli/cli/blob/trunk/docs/install_linux.md
+    if command -v apt-get &> /dev/null; then
+        sudo mkdir -p -m 755 /etc/apt/keyrings /etc/apt/sources.list.d
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+            | sudo tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null
+        sudo chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+            | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt-get update
+        sudo apt-get install -y gh || echo "WARN: gh install failed."
+    elif command -v dnf &> /dev/null; then
+        # dnf5 and dnf4 take different config-manager syntax. Amazon Linux 2023
+        # is dnf4; recent Fedora is dnf5.
+        if dnf --version 2>/dev/null | grep -qiE 'dnf5|^5\.'; then
+            sudo dnf install -y dnf5-plugins
+            sudo dnf config-manager addrepo --from-repofile=https://cli.github.com/packages/rpm/gh-cli.repo
+        else
+            sudo dnf install -y 'dnf-command(config-manager)'
+            sudo dnf config-manager --add-repo https://cli.github.com/packages/rpm/gh-cli.repo
+        fi
+        sudo dnf install -y gh || echo "WARN: gh install failed."
+    elif command -v brew &> /dev/null; then
+        brew install gh || echo "WARN: gh install failed."
+    fi
+fi
+
+if command -v gh &> /dev/null; then
+    if gh auth status &> /dev/null; then
+        echo "GitHub CLI already authenticated."
+    else
+        echo "Authenticating the GitHub CLI so mise can resolve tool versions."
+        gh auth login || echo "WARN: gh auth login did not complete."
+    fi
+elif [[ -z "${GITHUB_TOKEN:-}" ]]; then
+    echo "WARN: no GitHub credentials available. mise will likely fail to"
+    echo "      resolve tool versions on a rate-limited host. Either install"
+    echo "      the GitHub CLI and run 'gh auth login', or export GITHUB_TOKEN"
+    echo "      with a no-scope token from https://github.com/settings/tokens"
+fi
+
 # chezmoi prompts for work/gui/minimal on first run.
 if ! command -v chezmoi &> /dev/null; then
     echo "Installing chezmoi..."

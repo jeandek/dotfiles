@@ -44,7 +44,13 @@ Add the key [to GitHub](https://github.com/settings/keys), then run:
 curl -fsSL https://raw.githubusercontent.com/jeandek/dotfiles/main/bootstrap.sh | bash
 ```
 
-You will be asked the three questions above. This installs the base system packages, chezmoi, and then applies the dotfiles, which triggers tool installation via `run_onchange_` scripts.
+You will be asked the three questions above. This installs the base system packages, authenticates the GitHub CLI, installs chezmoi, and then applies the dotfiles, which triggers tool installation via `run_onchange_` scripts.
+
+### GitHub credentials
+
+Bootstrap installs the GitHub CLI and runs `gh auth login`, because mise resolves tools from the GitHub API and unauthenticated requests are capped at 60/hour per source IP — permanently exhausted on a shared NAT gateway.
+
+If `gh` cannot be installed, export `GITHUB_TOKEN` instead with a [token](https://github.com/settings/tokens); it needs no scopes.
 
 On a work machine, clone the private source as well. Until you do, git has no email configured and will refuse to commit — see [Machine-Local Configuration](#machine-local-configuration).
 
@@ -64,6 +70,8 @@ Tools are resolved in one place only. The rule:
 2. **mise** owns everything else it can install as a prebuilt binary. See `dot_config/mise/config.toml.tmpl`.
 3. **Platform package manager** is the fallback for anything mise cannot serve on that platform — Homebrew on macOS (`dot_config/private_homebrew/Brewfile.tmpl`, also home to `gui` casks), apt/dnf on Linux.
 4. **Base system packages** are inlined in the install script: a shell, git, curl, a compiler, and gpg. Nothing else belongs there.
+
+Rule 2 resolves tools from the GitHub API, so mise needs [GitHub credentials](#github-credentials).
 
 Rule 1 is deliberately narrow. Nearly every tool offers an install script now, and preferring them wholesale would be a downgrade: mise verifies checksums, GitHub attestations and SLSA provenance on each install, while `curl | bash` is unverified remote code run on every new machine. Self-update is the only case where that trade is worth it, because there the version manager is actively lying.
 

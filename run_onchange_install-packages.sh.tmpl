@@ -74,6 +74,18 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 eval "$(mise activate bash)"
 
+# mise resolves most tools from the GitHub API, which allows 60 requests/hour
+# per source IP when unauthenticated. On a host behind a shared NAT gateway
+# that budget is permanently exhausted and resolution fails outright. This
+# cannot authenticate for you, since gh auth login needs a browser, so it warns
+# with the fix rather than letting mise fail with a bare 403.
+if [[ -z "${GITHUB_TOKEN:-}" ]] \
+   && ! { command -v gh &> /dev/null && gh auth status &> /dev/null; }; then
+    echo "WARN: no GitHub credentials found. If mise fails below with a 403," >&2
+    echo "      run 'gh auth login', or export GITHUB_TOKEN with a no-scope" >&2
+    echo "      token from https://github.com/settings/tokens" >&2
+fi
+
 mise install -y
 # 4. Self-updating tools, via their own installers.
 #
