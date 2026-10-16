@@ -11,11 +11,47 @@ set -euo pipefail
 # a compiler for mise backends that build, and gpg. Real tooling comes from mise.
 {{   $id := .chezmoi.osRelease.id -}}
 {{   $like := get .chezmoi.osRelease "idLike" | default "" -}}
+# Request a package only when the command it provides is actually missing.
+#
+# Amazon Linux 2023 preinstalls stripped variants such as curl-minimal and
+# gnupg2-minimal, which already provide the command and declare a conflict with
+# the full package. Naming the full package outright makes dnf refuse the whole
+# transaction, so asking only for what is genuinely absent avoids that entire
+# class of conflict rather than special-casing each one.
+PKGS=""
+need() { command -v "$1" &> /dev/null || PKGS="$PKGS $2"; }
+
 {{   if or (eq $id "debian") (eq $id "ubuntu") (contains "debian" $like) -}}
-sudo apt-get update
-sudo apt-get install -y zsh git curl build-essential gnupg{{ if eq .chezmoi.arch "arm64" }} nnn{{ end }}
+need zsh zsh
+need git git
+need curl curl
+need gpg gnupg
+need gcc build-essential
+need make build-essential
+{{     if eq .chezmoi.arch "arm64" -}}
+need nnn nnn
+{{     end -}}
+if [[ -n "$PKGS" ]]; then
+    sudo apt-get update
+    sudo apt-get install -y ${PKGS}
+else
+    echo "Base packages already present."
+fi
 {{   else if or (eq $id "amzn") (eq $id "fedora") (eq $id "rhel") (contains "fedora" $like) (contains "rhel" $like) -}}
-sudo dnf install -y zsh git curl gcc make gnupg2{{ if eq .chezmoi.arch "arm64" }} nnn{{ end }}
+need zsh zsh
+need git git
+need curl curl
+need gpg gnupg2
+need gcc gcc
+need make make
+{{     if eq .chezmoi.arch "arm64" -}}
+need nnn nnn
+{{     end -}}
+if [[ -n "$PKGS" ]]; then
+    sudo dnf install -y ${PKGS}
+else
+    echo "Base packages already present."
+fi
 {{   else -}}
 echo "ERROR: unsupported distro '{{ $id }}' (ID_LIKE='{{ $like }}')." >&2
 echo "Add a branch for it in run_onchange_install-packages.sh.tmpl and re-run." >&2

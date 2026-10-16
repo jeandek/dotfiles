@@ -17,16 +17,52 @@ fi
 echo "Detected OS: $OS"
 
 if [[ "$OS" == "Linux" ]]; then
+    # Request a package only when the command it provides is actually missing.
+    # Amazon Linux 2023 preinstalls stripped variants such as curl-minimal that
+    # already provide the command and conflict with the full package, so naming
+    # the full package outright makes dnf refuse the whole transaction.
+    PKGS=""
+    need() { command -v "$1" &> /dev/null || PKGS="$PKGS $2"; }
+
     if command -v apt-get &> /dev/null; then
-        sudo apt-get update
-        sudo apt-get install -y zsh git curl unzip build-essential
+        need zsh zsh
+        need git git
+        need curl curl
+        need unzip unzip
+        need gcc build-essential
+        need chsh passwd
+        if [[ -n "$PKGS" ]]; then
+            sudo apt-get update
+            sudo apt-get install -y ${PKGS}
+        fi
     elif command -v dnf &> /dev/null; then
-        sudo dnf install -y zsh git curl unzip gcc make
+        need zsh zsh
+        need git git
+        need curl curl
+        need unzip unzip
+        need gcc gcc
+        need make make
+        # chsh lives in util-linux-user on the fedora family and is not part of
+        # the default Amazon Linux 2023 set.
+        need chsh util-linux-user
+        if [[ -n "$PKGS" ]]; then
+            sudo dnf install -y ${PKGS}
+        fi
     else
         echo "ERROR: no supported package manager (need apt-get or dnf)." >&2
         exit 1
     fi
-    chsh -s "$(command -v zsh)" || echo "WARN: could not change login shell; do it by hand."
+
+    ZSH_PATH="$(command -v zsh)"
+    if [[ "$SHELL" == "$ZSH_PATH" ]]; then
+        echo "Login shell is already zsh."
+    elif ! command -v chsh &> /dev/null; then
+        echo "WARN: chsh not available. Set the login shell by hand:"
+        echo "      chsh -s $ZSH_PATH"
+    elif ! chsh -s "$ZSH_PATH"; then
+        echo "WARN: chsh failed. Set the login shell by hand:"
+        echo "      chsh -s $ZSH_PATH"
+    fi
 elif [[ "$OS" == "macOS" ]]; then
     if ! xcode-select -p &> /dev/null; then
         xcode-select --install
