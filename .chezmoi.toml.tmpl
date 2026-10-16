@@ -1,9 +1,15 @@
-{{- $email := promptStringOnce . "email" "Email address" -}}
-{{- $kiro_cli := promptBoolOnce . "kiro_cli" "Enable Kiro CLI shell integration" -}}
+{{- $work := promptBoolOnce . "work" "Work machine" false -}}
+{{- $minimal := promptBoolOnce . "minimal" "Minimal install (shell only, no language toolchains)" false -}}
+{{- /* Every desktop OS here has a GUI; only Linux is ever headless. */ -}}
+{{- $gui := true -}}
+{{- if eq .chezmoi.os "linux" -}}
+{{-   $gui = promptBoolOnce . "gui" "Desktop session (install fonts and GUI apps)" false -}}
+{{- end -}}
 
 [diff]
     exclude = ["externals"]
 
 [data]
-    email = {{ $email | quote }}
-    kiro_cli = {{ $kiro_cli }}
+    work = {{ $work }}
+    gui = {{ $gui }}
+    minimal = {{ $minimal }}

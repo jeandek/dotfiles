@@ -1,25 +1,37 @@
 #!/bin/bash
-# Brewfile hash: {{ include "Brewfile" | sha256sum }}
-# pkglist.txt hash: {{ include "pkglist.txt" | sha256sum }}
-# mise config hash: {{ include "dot_config/mise/config.toml" | sha256sum }}
+# Brewfile hash: {{ includeTemplate "dot_config/private_homebrew/Brewfile.tmpl" . | sha256sum }}
+# mise config hash: {{ includeTemplate "dot_config/mise/config.toml.tmpl" . | sha256sum }}
 
-set -e
+set -euo pipefail
 
-# 1. OS packages (Linux only)
-if [[ "{{ .chezmoi.os }}" == "linux" ]]; then
-    sudo apt update
-    xargs sudo apt-get install -y < "{{ .chezmoi.sourceDir }}/pkglist.txt"
-fi
-
-# 2. Homebrew
+{{ if eq .chezmoi.os "linux" -}}
+# 1. Base system packages.
+#
+# Only the floor needed to bootstrap everything else: a shell, git, a fetcher,
+# a compiler for mise backends that build, and gpg. Real tooling comes from mise.
+{{   $id := .chezmoi.osRelease.id -}}
+{{   $like := get .chezmoi.osRelease "idLike" | default "" -}}
+{{   if or (eq $id "debian") (eq $id "ubuntu") (contains "debian" $like) -}}
+sudo apt-get update
+sudo apt-get install -y zsh git curl build-essential gnupg{{ if eq .chezmoi.arch "arm64" }} nnn{{ end }}
+{{   else if or (eq $id "amzn") (eq $id "fedora") (eq $id "rhel") (contains "fedora" $like) (contains "rhel" $like) -}}
+sudo dnf install -y zsh git curl gcc make gnupg2{{ if eq .chezmoi.arch "arm64" }} nnn{{ end }}
+{{   else -}}
+echo "ERROR: unsupported distro '{{ $id }}' (ID_LIKE='{{ $like }}')." >&2
+echo "Add a branch for it in run_onchange_install-packages.sh.tmpl and re-run." >&2
+exit 1
+{{   end -}}
+{{ end }}
+{{ if eq .chezmoi.os "darwin" -}}
+# 2. Homebrew. macOS only, and only for what mise cannot serve as a binary.
 if ! command -v brew &> /dev/null; then
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
-eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /home/linuxbrew/.linuxbrew/bin/brew shellenv 2>/dev/null)"
+eval "$(/opt/homebrew/bin/brew shellenv)"
 
-brew bundle --file="{{ .chezmoi.sourceDir }}/Brewfile"
-
-# 3. mise (runtimes)
+brew bundle --file="$HOME/.config/homebrew/Brewfile"
+{{ end }}
+# 3. mise. Owns every CLI and runtime it can install as a prebuilt binary.
 if ! command -v mise &> /dev/null; then
     curl https://mise.run | sh
 fi
@@ -27,3 +39,21 @@ export PATH="$HOME/.local/bin:$PATH"
 eval "$(mise activate bash)"
 
 mise install -y
+# 4. Self-updating tools, via their own installers.
+#
+# These ship an `upgrade` subcommand and replace their own binary, so a version
+# manager is the wrong home for them: mise would pin a version the tool then
+# overwrites, leaving `mise ls` reporting something that is not installed.
+# Each guard stops the installer re-running once the tool is present, since the
+# tool handles its own updates from then on.
+{{ if not .work }}
+# Work machines get an internally-configured Claude Code build instead.
+if ! command -v claude &> /dev/null; then
+    curl -fsSL https://claude.ai/install.sh | bash
+fi
+{{ end -}}
+{{ if not .minimal }}
+if ! command -v opencode &> /dev/null; then
+    curl -fsSL https://opencode.ai/install | bash
+fi
+{{ end }}

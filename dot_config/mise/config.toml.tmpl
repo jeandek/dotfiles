@@ -1,0 +1,45 @@
+[tools]
+# Shell experience. Identical on every machine, including minimal ones.
+starship = "latest"
+bat = "latest"
+eza = "latest"
+fzf = "latest"
+zoxide = "latest"
+ripgrep = "latest"
+delta = "latest"
+jq = "latest"
+shellcheck = "latest"
+"github:simeji/jid" = "latest"
+{{ if and (eq .chezmoi.os "linux") (eq .chezmoi.arch "amd64") -}}
+# Upstream publishes x86_64 Linux statics only. Elsewhere nnn comes from
+# Homebrew (macOS) or the distro package list (arm64 Linux).
+"github:jarun/nnn" = "latest"
+{{ end -}}
+
+{{ if not .minimal }}
+# Cloud tooling. Not needed on a box that only runs services.
+awscli = "latest"
+
+# Language runtimes and the tools that depend on them.
+go = "latest"
+node = "lts"
+python = "latest"
+rust = "latest"
+uv = "latest"
+
+# Package managers
+"npm:npm" = "latest"
+"npm:pnpm" = "latest"
+
+# CLI helpers
+"pipx:tldr" = "latest"
+
+# CLIs
+"npm:@bitwarden/cli" = "latest"
+
+# Javascript
+"npm:prettier" = "latest"
+"npm:@antfu/ni" = "latest"
+{{ end }}
+[settings]
+experimental = true

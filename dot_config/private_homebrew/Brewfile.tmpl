@@ -1,0 +1,16 @@
+# Consumed by `brew bundle --global` on macOS only. Everything that mise can
+# serve as a prebuilt binary lives in dot_config/mise/config.toml.tmpl instead;
+# this file is the fallback for the rest.
+
+# No upstream darwin build, and not in the mise registry.
+brew "nnn"
+
+# System-level, integrates with the OS keychain and pinentry.
+brew "gnupg"
+
+{{ if .gui -}}
+# Editor font
+cask "font-fira-code"
+# Terminal font (except for Ghostty)
+cask "font-meslo-for-powerlevel10k"
+{{ end -}}

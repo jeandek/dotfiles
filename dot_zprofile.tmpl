@@ -1,7 +1,6 @@
-{{ if .kiro_cli -}}
-# Kiro CLI pre block. Keep at the top of this file.
-[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.pre.zsh"
-{{ end -}}
+# Pre-hooks. Machine-local drop-ins, not managed by this repo.
+for _f in ${XDG_CONFIG_HOME:-$HOME/.config}/zsh/profile.pre.d/*.zsh(N); do source "$_f"; done
+unset _f
 
 {{ if eq .chezmoi.os "darwin" -}}
 eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -9,7 +8,6 @@ eval "$(/opt/homebrew/bin/brew shellenv)"
 
 eval "$("${HOME}/.local/bin/mise" activate zsh --shims)"
 
-{{ if .kiro_cli -}}
-# Kiro CLI post block. Keep at the bottom of this file.
-[[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zprofile.post.zsh"
-{{ end -}}
+# Post-hooks. Machine-local drop-ins, not managed by this repo.
+for _f in ${XDG_CONFIG_HOME:-$HOME/.config}/zsh/profile.post.d/*.zsh(N); do source "$_f"; done
+unset _f

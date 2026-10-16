@@ -1,7 +1,15 @@
 [user]
 	name = Jean de Kernier
-	email = {{ .email | quote }}
+{{- if not .work }}
+	email = jean@kernier.dev
+{{- end }}
+	# Never infer an identity from $EMAIL or the hostname. Without this git
+	# commits silently as user@fqdn, or as whatever $EMAIL happens to hold,
+	# which on a work machine means the wrong address with no warning.
+	useConfigOnly = true
+{{- if and (not .work) (not .minimal) }}
 	signingkey = B813782A74BB6703
+{{- end }}
 
 [core]
 	editor = vim
@@ -42,3 +50,9 @@
     		git rebase --onto $2 $(git merge-base $1 @) \
 		}; f"
 	stash-staged = "!$HOME/.config/bin/git/stash-staged"
+
+# Machine-local overrides, kept out of this repo. Git ignores a missing
+# include path, so this is a no-op where the file does not exist. Last in the
+# file so it can override anything above, including [user].
+[include]
+	path = ~/.config/git/local.inc
