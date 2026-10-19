@@ -38,6 +38,10 @@ uv = "latest"
 # CLIs
 "npm:@bitwarden/cli" = "latest"
 "github:jesseduffield/lazygit" = "latest"
+# Upstream ships bare, unarchived release binaries, which mise only finds via an
+# explicit asset_pattern, and names the arches aarch64/x86_64 rather than mise's
+# own arm64/amd64 — so the pattern cannot use mise's {arch} placeholder either.
+"github:herdrdev/herdr" = { version = "latest", asset_pattern = "herdr-{os}-{{ if eq .chezmoi.arch "arm64" }}aarch64{{ else }}x86_64{{ end }}" }
 
 # Javascript
 "npm:prettier" = "latest"
