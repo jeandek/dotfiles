@@ -2,3 +2,8 @@ bootstrap.sh
 README.md
 
 .oh-my-zsh/cache/**
+
+{{- /* Work machines get their CLAUDE.md from chezmoi-work. */}}
+{{ if .work }}
+CLAUDE.md
+{{ end }}
