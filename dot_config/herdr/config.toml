@@ -1,0 +1,28 @@
+# herdr. chezmoi owns this file jointly with the application: herdr writes it
+# itself — `onboarding = false` below came from finishing onboarding, and
+# `herdr config reset-keys` and the Settings UI also write here. So changes made
+# in herdr's UI are reverted by the next apply; make them here, then run
+# `herdr config check && herdr server reload-config`.
+
+onboarding = false
+
+[ui]
+# Machine-specific readouts, supplied as drop-ins in tab-bar-right.d/ (see
+# tab-bar-right.sh). herdr runs this on the server, so attaching with
+# `herdr --remote` reports the remote machine, and $HOME expands because the
+# command goes through `sh -lc`. Nothing installed means an empty entry.
+tab_bar_right = [
+  { type = "command", command = "$HOME/.config/herdr/tab-bar-right.sh", interval_seconds = 60, timeout_seconds = 5 },
+]
+# Group the agents list by state (blocked first) rather than by space.
+# Herdr.app follows this too until its sort toggle is used.
+agent_panel_sort = "priority"
+
+# Two lines per agent, so neither name shares its line and gets truncated:
+# the workspace and pane, then the tab. An unnamed pane drops out with its
+# separator. The harness name (claude, codex…) and the machine are dropped.
+[ui.sidebar.agents]
+rows = [
+  ["state_icon", "workspace", "pane"],
+  ["tab"],
+]
