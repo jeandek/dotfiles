@@ -23,6 +23,9 @@ if [[ "$OS" == "Linux" ]]; then
     # the full package outright makes dnf refuse the whole transaction.
     PKGS=""
     need() { command -v "$1" &> /dev/null || PKGS="$PKGS $2"; }
+    # Same, for a shared library that a mise-installed prebuilt binary links
+    # against but the base image may omit.
+    need_lib() { /sbin/ldconfig -p 2> /dev/null | grep -q "$1" || PKGS="$PKGS $2"; }
 
     if command -v apt-get &> /dev/null; then
         need zsh zsh
@@ -31,6 +34,8 @@ if [[ "$OS" == "Linux" ]]; then
         need unzip unzip
         need gcc build-essential
         need chsh passwd
+        # Node's prebuilt Linux binaries link libatomic.
+        need_lib libatomic.so.1 libatomic1
         if [[ -n "$PKGS" ]]; then
             sudo apt-get update
             sudo apt-get install -y ${PKGS}
@@ -45,6 +50,9 @@ if [[ "$OS" == "Linux" ]]; then
         # chsh lives in util-linux-user on the fedora family and is not part of
         # the default Amazon Linux 2023 set.
         need chsh util-linux-user
+        # Node's prebuilt Linux binaries link libatomic, which the Amazon Linux
+        # 2023 base image does not ship.
+        need_lib libatomic.so.1 libatomic
         if [[ -n "$PKGS" ]]; then
             sudo dnf install -y ${PKGS}
         fi
